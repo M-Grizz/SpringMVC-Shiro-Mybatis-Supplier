@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- 数据库连接池 -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/shiro"/>
+        <property name="username" value="root"/>
+        <property name="password" value="tiger"/>
+    </bean>
+    
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"></property>
+        <property name="configLocation" value="classpath:mybatis-config.xml" /> 
+    </bean>
+<!-- Service -->
+    <bean id="listService" class="com.github.grizz.supplier.service.ListService" />
+        
+    <!--
+        3. mybatis自动扫描加载Sql映射文件/接口 : MapperScannerConfigurer sqlSessionFactory
+
+        basePackage:指定sql映射文件/接口所在的包（自动扫描）
+    -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.github.grizz.supplier.mapper"></property>
+        <property name="sqlSessionFactory" ref="sqlSessionFactory"></property>
+    </bean>
+
+    <!--
+        4. 事务管理 : DataSourceTransactionManager dataSource:引用上面定义的数据源
+    -->
+    <bean id="txManager"
+        class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+
+    <!-- Base DAO -->
+    <bean id="baseDao" abstract="true">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!-- DAO -->
+    <bean id="permissionDao" class="com.github.grizz.supplier.shiro.dao.PermissionDaoImpl" parent="baseDao"/>
+    <bean id="roleDao" class="com.github.grizz.supplier.shiro.dao.RoleDaoImpl" parent="baseDao"/>
+    <bean id="userDao" class="com.github.grizz.supplier.shiro.dao.UserDaoImpl" parent="baseDao"/>
+
+    <!-- Service -->
+    <bean id="permissionService" class="com.github.grizz.supplier.shiro.service.PermissionServiceImpl">
+        <property name="permissionDao" ref="permissionDao"/>
+    </bean>
+    
+    <bean id="roleService" class="com.github.grizz.supplier.shiro.service.RoleServiceImpl">
+        <property name="roleDao" ref="roleDao"/>
+    </bean>
+
+    <bean id="passwordHelper" class="com.github.grizz.supplier.shiro.service.PasswordHelper">
+        <property name="algorithmName" value="md5"/>
+        <property name="hashIterations" value="2"/>
+    </bean>
+
+    <bean id="userService" class="com.github.grizz.supplier.shiro.service.UserServiceImpl">
+        <property name="userDao" ref="userDao"/>
+        <property name="passwordHelper" ref="passwordHelper"/>
+    </bean>
+
+
+</beans>

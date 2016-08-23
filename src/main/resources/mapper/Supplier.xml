@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.grizz.supplier.mapper.SupplierMapper">
+
+    <!-- 分页查找 -->
+    <select id="queryListFenye" parameterType="PageBean" resultType="Supplier">    
+          select * from supplier 
+          <where>
+        <if test="nameSearch != null and !&quot;&quot;.equals(nameSearch.trim())">
+            and NAME=#{nameSearch}
+        </if>
+        <if test="codeSearch != null and !&quot;&quot;.equals(codeSearch.trim())">
+            and CODE like '%' #{codeSearch} '%'
+        </if>
+    </where>
+    order by id limit #{beginNumber},#{ps} 
+    </select>
+    
+    <!-- 得到供应商条数 -->
+    <select id="selectCount" resultType="java.lang.Integer" >
+        select count(*) from supplier
+    </select>
+    
+   <!-- 查找单挑供应商 -->
+    <select id="selectOne" parameterType="int" resultType="Supplier">
+        select * from supplier where ID=#{_parameter}
+    </select>
+    
+     <!-- 修改供应商 -->
+    <update id="update" parameterType="Supplier">
+        update supplier set name=#{name},code=#{code},jtype=#{jtype},zhuangtai=#{zhuangtai},ps=#{ps},report=#{report},dboss=#{dboss},xboss=#{xboss} where id=#{id}
+    </update>
+    
+    <!-- 添加供应商 -->
+    <insert id="insert" parameterType="Supplier">
+        INSERT INTO `supplier` (ID,NAME,CODE,JTYPE,ZHUANGTAI,PS,REPORT,DBOSS,XBOSS) VALUES (#{id},#{name},#{code},#{jtype},#{zhuangtai},#{ps},#{report},#{dboss},#{xboss});
+    </insert>
+
+</mapper>
